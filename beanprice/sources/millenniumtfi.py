@@ -45,7 +45,7 @@ def _parse_ticker(ticker):
     return fund_details
 
 
-def _get_quote(ticker, date=None):
+def _get_quote(ticker, commodity_price, myvar, date=None):
     """Fetch a price from Millennium's API."""
     fund_details = _parse_ticker(ticker)
 
@@ -82,8 +82,8 @@ def _get_quote(ticker, date=None):
 
 
 class Source(source.Source):
-    def get_latest_price(self, ticker):
-        return _get_quote(ticker)
+    def get_latest_price(self, ticker, commodity_price, myvar):
+        return _get_quote(ticker, commodity_price, myvar)
 
-    def get_historical_price(self, ticker, time):
-        return _get_quote(ticker, time)
+    def get_historical_price(self, ticker, commodity_price, myvar, time):
+        return _get_quote(ticker, commodity_price, myvar, time)

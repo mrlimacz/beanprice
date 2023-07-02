@@ -12,3 +12,4 @@ build
 dist
 beanprice.egg-info
 __pycache__
+.vscode

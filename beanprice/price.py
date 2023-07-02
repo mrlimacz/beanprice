@@ -60,6 +60,8 @@ class DatedPrice(NamedTuple):
     quote: Optional[str]
     date: Optional[datetime.date]
     sources: List[PriceSource]
+    commodity_date: Optional[datetime.date]
+    myvar: Optional[str]
 
 
 # The Python package where the default sources are found.
@@ -239,7 +241,7 @@ def find_currencies_declared(
                                 entry.currency, exc)
             else:
                 for quote, psources in source_map.items():
-                    currencies.append((entry.currency, quote, psources))
+                    currencies.append((entry.currency, quote, psources, entry.date, entry.meta.get('myvar')))
         else:
             # Otherwise we simply ignore the declaration. That is, a Commodity
             # directive without any "price" metadata would not register as a
@@ -257,7 +259,7 @@ def log_currency_list(message, currencies):
       currencies: A list of (base, quote) currency pair.
     """
     logging.debug("-------- {}:".format(message))
-    for base, quote in currencies:
+    for base, quote, commodity_date, myvar in currencies:
         logging.debug("  {:>32}".format('{} /{}'.format(base, quote)))
 
 
@@ -285,8 +287,8 @@ def get_price_jobs_at_date(entries: data.Entries,
     # tickers for each (base, quote) pair. This is the only place tickers
     # appear.
     declared_triples = find_currencies_declared(entries, date)
-    currency_map = {(base, quote): psources
-                    for base, quote, psources in declared_triples}
+    currency_map = {(base, quote, commodity_date, myvar): psources
+                    for base, quote, psources, commodity_date, myvar in declared_triples}
 
     # Compute the initial list of currencies to consider.
     if undeclared_source:
@@ -319,13 +321,13 @@ def get_price_jobs_at_date(entries: data.Entries,
     jobs = []
     for base_quote in currencies:
         psources = currency_map.get(base_quote, None)
-        base, quote = base_quote
+        base, quote, commodity_date, myvar = base_quote
 
         # If there are no sources, create a default one.
         if not psources:
             psources = [PriceSource(default_source, base, False)]
 
-        jobs.append(DatedPrice(base, quote, date, psources))
+        jobs.append(DatedPrice(base, quote, date, psources, commodity_date, myvar))
     return sorted(jobs)
 
 
@@ -467,7 +469,7 @@ def now():
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def fetch_cached_price(source, symbol, date):
+def fetch_cached_price(source, symbol, date, commodity_price, myvar):
     """Call Source to fetch a price, but look and/or update the cache first.
 
     This function entirely deals with caching and correct expiration. It keeps
@@ -493,9 +495,9 @@ def fetch_cached_price(source, symbol, date):
 
     if _CACHE is None:
         # The cache is disabled; just call and return.
-        result = (source.get_latest_price(symbol)
+        result = (source.get_latest_price(symbol, commodity_price, myvar)
                   if time is None else
-                  source.get_historical_price(symbol, time))
+                  source.get_historical_price(symbol, commodity_price, myvar, time))
 
     else:
         # The cache is enabled and we have to compute the current/latest price.
@@ -589,7 +591,7 @@ def fetch_price(dprice: DatedPrice, swap_inverted: bool = False) -> Optional[dat
             source = psource.module.Source()
         except AttributeError:
             continue
-        srcprice = fetch_cached_price(source, psource.symbol, dprice.date)
+        srcprice = fetch_cached_price(source, psource.symbol, dprice.date, dprice.commodity_date, dprice.myvar)
         if srcprice is not None:
             break
     else:
