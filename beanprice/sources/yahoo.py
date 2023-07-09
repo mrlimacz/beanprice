@@ -109,7 +109,7 @@ def get_price_series(ticker: str,
 class Source(source.Source):
     "Yahoo Finance CSV API price extractor."
 
-    def get_latest_price(self, ticker: str) -> Optional[source.SourcePrice]:
+    def get_latest_price(self, ticker: str, metadata: dict) -> Optional[source.SourcePrice]:
         """See contract in beanprice.source.Source."""
 
         session = requests.Session()
@@ -149,7 +149,7 @@ class Source(source.Source):
 
         return source.SourcePrice(price, trade_time, currency)
 
-    def get_historical_price(self, ticker: str,
+    def get_historical_price(self, ticker: str, metadata: dict,
                              time: datetime) -> Optional[source.SourcePrice]:
         """See contract in beanprice.source.Source."""
 

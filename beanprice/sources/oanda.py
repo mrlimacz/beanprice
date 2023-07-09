@@ -107,7 +107,7 @@ def _fetch_price(params_dict, time):
 class Source(source.Source):
     "OANDA price source extractor."
 
-    def get_latest_price(self, ticker):
+    def get_latest_price(self, ticker, metadata):
         """See contract in beanprice.source.Source."""
         time = datetime.datetime.now(tz.tzutc())
         params_dict = {
@@ -118,7 +118,7 @@ class Source(source.Source):
         }
         return _fetch_price(params_dict, time)
 
-    def get_historical_price(self, ticker, time):
+    def get_historical_price(self, ticker, metadata, time):
         """See contract in beanprice.source.Source."""
         time = time.astimezone(tz.tzutc())
         query_interval_begin = (time - datetime.timedelta(days=5))

@@ -64,8 +64,8 @@ def _get_quote(ticker, date):
 
 class Source(source.Source):
 
-    def get_latest_price(self, ticker):
+    def get_latest_price(self, ticker, metadata):
         return _get_quote(ticker, 'latest')
 
-    def get_historical_price(self, ticker, time):
+    def get_historical_price(self, ticker, metadata, time):
         return _get_quote(ticker, time.date().isoformat())

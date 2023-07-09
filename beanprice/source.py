@@ -54,7 +54,7 @@ class Source:
       must be timezone-aware (not naive).
     """
 
-    def get_latest_price(self, ticker: str) -> Optional[SourcePrice]:
+    def get_latest_price(self, ticker: str, metadata: dict) -> Optional[SourcePrice]:
         """Fetch the current latest price. The date may differ.
 
         This routine attempts to fetch the most recent available price, and
@@ -63,11 +63,12 @@ class Source:
 
         Args:
           ticker: A string, the ticker to be fetched by the source.
+          metadada: A dictionary od commodity metadata.
         Returns:
           A SourcePrice instance, or None if we failed to fetch.
         """
 
-    def get_historical_price(self, ticker: str,
+    def get_historical_price(self, ticker: str, metadata: dict,
                              time: datetime.datetime) -> Optional[SourcePrice]:
         """Return the lastest historical price found for the symbol at the given date.
 
@@ -80,6 +81,7 @@ class Source:
 
         Args:
           ticker: A string, the ticker to be fetched by the source.
+          metadada: A dictionary od commodity metadata.
           time: The timestamp at which to query for the price.
         Returns:
           A SourcePrice instance, or None if we failed to fetch.
