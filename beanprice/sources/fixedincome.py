@@ -32,10 +32,10 @@ def _get_quote(ticker, metadata, quote_date=None):
         "fixed_income_period_count",
         "fixed_income_period_duration",
         "fixed_income_nominal_value",
-        "fixed_income_capitalization",
+        "fixed_income_coupons_reinvested",
         "commodity_date",
     }
-    if required_keys > metadata.keys():
+    if not required_keys.issubset(set(metadata.keys())):
         raise FixedIncomeError(
             f"The following metadata not provided: {', '. join(required_keys - metadata.keys())}"
         )
@@ -90,7 +90,7 @@ def _get_quote(ticker, metadata, quote_date=None):
         period_bounds.PeriodEndDate - period_bounds.PeriodStartDate
     )
     period_bounds["InterestRate"] = period_bounds.PeriodNumber.map(interest_mapping)
-    if metadata.get("fixed_income_capitalization"):
+    if metadata.get("fixed_income_coupons_reinvested") == 'true':
         period_bounds["CumulativeInterestRate"] = (
             (1 + period_bounds.InterestRate)
             .cumsum()
