@@ -262,7 +262,7 @@ def log_currency_list(message, currencies):
       currencies: A list of (base, quote) currency pair.
     """
     logging.debug("-------- {}:".format(message))
-    for base, quote, metadata in currencies:
+    for base, quote in currencies:
         logging.debug("  {:>32}".format('{} /{}'.format(base, quote)))
 
 
