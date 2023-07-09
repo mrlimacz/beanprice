@@ -38,7 +38,7 @@ def _parse_ticker(ticker):
 
 class Source(source.Source):
 
-    def get_latest_price(self, ticker):
+    def get_latest_price(self, ticker, metadata):
         symbol, base = _parse_ticker(ticker)
         headers = {
             'X-CMC_PRO_API_KEY': environ['COINMARKETCAP_API_KEY'],
@@ -69,5 +69,5 @@ class Source(source.Source):
 
         return source.SourcePrice(price, date, base)
 
-    def get_historical_price(self, ticker, time):
+    def get_historical_price(self, ticker, metadata, time):
         return None

@@ -101,14 +101,14 @@ class Source(source.Source):
     There are two ways of expressing a ticker, either by their coincap id (bitcoin)
     or by their ticker (BTC), in which case the highest ranked coin will be picked."""
 
-    def get_latest_price(self, ticker) -> source.SourcePrice:
+    def get_latest_price(self, ticker, metadata) -> source.SourcePrice:
         price_float, timestamp = get_latest_price(ticker)
         price = Decimal(price_float)
         price_time = datetime.datetime.fromtimestamp(timestamp).\
             replace(tzinfo=datetime.timezone.utc)
         return source.SourcePrice(price, price_time, 'USD')
 
-    def get_historical_price(self, ticker: str,
+    def get_historical_price(self, ticker: str, metadata: dict,
                              time: datetime.datetime) -> Optional[source.SourcePrice]:
         for datapoint in self.get_prices_series(ticker,
                                                 time +
