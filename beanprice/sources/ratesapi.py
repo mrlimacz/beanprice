@@ -41,22 +41,14 @@ def _parse_ticker(ticker):
             'Invalid ticker. Use "BASE-SYMBOL" format.')
     return match.groups()
 
-def _get_quote(ticker, date, metadata):
+def _get_quote(ticker, date):
     """Fetch a exchangerate from ratesapi."""
     base, symbol = _parse_ticker(ticker)
-    
-    # Get API token (no longer possible to send requests without it)
-    if metadata is None or metadata.get("ratesapi_token") is None:
-        ratesapi_token = input("Provide API key (can be obtained for free, see https://exchangerate.host/): ")
-    else:
-        ratesapi_token = metadata.get("ratesapi_token")
-   
     params = {
         'base': base,
         'symbol': symbol,
-        'access_key': ratesapi_token
     }
-    response = requests.get(url='http://api.exchangerate.host/' + date, params=params)
+    response = requests.get(url='https://api.exchangerate.host/' + date, params=params)
 
     if response.status_code != requests.codes.ok:
         raise RatesApiError("Invalid response ({}): {}".format(response.status_code,
@@ -73,7 +65,7 @@ def _get_quote(ticker, date, metadata):
 class Source(source.Source):
 
     def get_latest_price(self, ticker, metadata):
-        return _get_quote(ticker, 'latest', metadata)
+        return _get_quote(ticker, 'latest')
 
     def get_historical_price(self, ticker, metadata, time):
-        return _get_quote(ticker, time.date().isoformat(), metadata)
+        return _get_quote(ticker, time.date().isoformat())
