@@ -93,7 +93,7 @@ def _get_quote(ticker, metadata, quote_date=None):
     if metadata.get("fixed_income_coupons_reinvested") == 'true':
         period_bounds["CumulativeInterestRate"] = (
             (1 + period_bounds.InterestRate)
-            .cumsum()
+            .cumprod()
             .fillna(method="ffill")
             .shift(1, fill_value=1)
         )
