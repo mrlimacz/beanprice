@@ -27,6 +27,7 @@ from beanprice import source
 class ECBRatesError(ValueError):
     "An error from the ECB Rates."
 
+
 def _parse_ticker(ticker):
     """Parse the base and quote currencies from the ticker.
 
