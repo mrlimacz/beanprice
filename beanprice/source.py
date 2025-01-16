@@ -68,7 +68,7 @@ class Source:
 
         Args:
           ticker: A string, the ticker to be fetched by the source.
-          metadada: A dictionary od commodity metadata.
+          metadata: A dictionary of commodity metadata.
         Returns:
           A SourcePrice instance, or None if we failed to fetch.
         """
@@ -87,7 +87,7 @@ class Source:
 
         Args:
           ticker: A string, the ticker to be fetched by the source.
-          metadada: A dictionary od commodity metadata.
+          metadata: A dictionary of commodity metadata.
           time: The timestamp at which to query for the price.
         Returns:
           A SourcePrice instance, or None if we failed to fetch.
