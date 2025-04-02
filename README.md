@@ -70,6 +70,8 @@ The following price sources are available:
 | EastMoneyFund(天天基金) | `beanprice.eastmoneyfund` | [Chinese Funds](http://fund.eastmoney.com/js/fundcode_search.js)                  | CNY                                                                              | ✓             | ✓                 |
 
 
+More price sources can be found at [awesome-beancount.com](https://awesome-beancount.com/#price-sources) website.
+
 ## Testing
 
 Run tests:
@@ -87,7 +89,7 @@ pylint beanprice
 Type checker:
 
 ```
-mypy beanprice --ignore-missing-imports
+mypy beanprice
 ```
 
 ## Copyright and License

@@ -201,8 +201,9 @@ def import_source(module_name: str):
 
 
 def find_currencies_declared(
-    entries: data.Entries, date: datetime.date = None
-) -> List[Tuple[str, str, List[PriceSource], dict]]:
+    entries: data.Entries,
+    date: Optional[datetime.date] = None,
+) -> List[Tuple[str, str, List[PriceSource]]]:
     """Return currencies declared in Commodity directives.
 
     If a 'price' metadata field is provided, include all the quote currencies
@@ -574,7 +575,7 @@ def setup_cache(cache_filename: Optional[str], clear_cache: bool):
         flag = "n"
 
     global _CACHE
-    _CACHE = shelve.open(cache_filename, flag=flag)
+    _CACHE = shelve.open(cache_filename, flag=flag)  # type: ignore
     _CACHE.expiration = DEFAULT_EXPIRATION  # type: ignore
 
 
@@ -681,7 +682,12 @@ def filter_redundant_prices(
     return filtered_prices, ignored_prices
 
 
-def process_args() -> Tuple[Any, List[DatedPrice], List[data.Price], Any]:
+def process_args() -> Tuple[
+    argparse.Namespace,
+    List[DatedPrice],
+    data.Directives,
+    Optional[Any],
+]:
     """Process the arguments. This also initializes the logging module.
 
     Returns:
