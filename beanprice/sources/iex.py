@@ -51,11 +51,11 @@ def fetch_quote(ticker):
 class Source(source.Source):
     "IEX API price extractor."
 
-    def get_latest_price(self, ticker, metadata):
+    def get_latest_price(self, ticker):
         """See contract in beanprice.source.Source."""
         return fetch_quote(ticker)
 
-    def get_historical_price(self, ticker, metadata, time):
+    def get_historical_price(self, ticker, time):
         """See contract in beanprice.source.Source."""
         raise NotImplementedError(
             "This is now implemented at https://iextrading.com/developers/docs/#hist and "

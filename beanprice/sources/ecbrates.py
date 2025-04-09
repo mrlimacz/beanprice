@@ -130,8 +130,8 @@ vs. ({symbol}, {symbol_rate_date})"
 
 class Source(source.Source):
 
-    def get_latest_price(self, ticker, metadata):
+    def get_latest_price(self, ticker):
         return _get_quote(ticker, None)
 
-    def get_historical_price(self, ticker, metadata, time):
+    def get_historical_price(self, ticker, time):
         return _get_quote(ticker, time.date().isoformat())

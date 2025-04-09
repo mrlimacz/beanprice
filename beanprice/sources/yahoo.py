@@ -138,7 +138,7 @@ class Source(source.Source):
             "https://query1.finance.yahoo.com/v1/test/getcrumb"
         ).text
 
-    def get_latest_price(self, ticker: str, metadata: dict) -> Optional[source.SourcePrice]:
+    def get_latest_price(self, ticker: str) -> Optional[source.SourcePrice]:
         """See contract in beanprice.source.Source."""
 
         url = "https://query1.finance.yahoo.com/v7/finance/quote"
@@ -176,7 +176,7 @@ class Source(source.Source):
         return source.SourcePrice(price, trade_time, currency)
 
     def get_historical_price(
-        self, ticker: str, metadata: dict, time: datetime
+        self, ticker: str, time: datetime
     ) -> Optional[source.SourcePrice]:
         """See contract in beanprice.source.Source."""
 

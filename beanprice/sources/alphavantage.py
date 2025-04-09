@@ -75,7 +75,7 @@ def _do_fetch(params):
 
 
 class Source(source.Source):
-    def get_latest_price(self, ticker, metadata):
+    def get_latest_price(self, ticker):
         kind, symbol, base = _parse_ticker(ticker)
 
         if kind == "price":
@@ -104,5 +104,5 @@ class Source(source.Source):
 
         return source.SourcePrice(price, date, base)
 
-    def get_historical_price(self, ticker, metadata, time):
+    def get_historical_price(self, ticker, time):
         return None
