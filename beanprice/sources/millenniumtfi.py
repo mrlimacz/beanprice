@@ -2,8 +2,8 @@
 """
 from decimal import Decimal
 
-import requests
 from zoneinfo import ZoneInfo
+import requests
 from pandas import DataFrame, to_datetime
 
 from beanprice import source
@@ -16,11 +16,15 @@ class MillenniumTFIError(ValueError):
 def _parse_ticker(ticker):
     """Parse the internal fund ID and other details from the fund full name
     Args:
-      ticker: A string, fund's full name (for list see https://www.bankmillennium.pl/klienci-indywidualni/inwestycje), with underscores (_) instead of spaces
+      ticker: A string, fund's full name (for list see 
+        https://www.bankmillennium.pl/klienci-indywidualni/inwestycje),
+        with underscores (_) instead of spaces
     Returns:
       Dictionary with internal fund id, currency, and company id
     """
-    url = "https://portal.api.bankmillennium.pl/bm/app/portal/views/public/funds//investmentFunds"
+    base_url = "https://portal.api.bankmillennium.pl"
+    endpoint_tickers = "bm/app/portal/views/public/funds//investmentFunds"
+    url = f"{base_url}/{endpoint_tickers}"
     response = requests.get(url)
     if response.status_code != requests.codes.ok:
         raise MillenniumTFIError(
@@ -48,9 +52,12 @@ def _parse_ticker(ticker):
 def _get_quote(ticker, date=None):
     """Fetch a price from Millennium's API."""
     fund_details = _parse_ticker(ticker)
+    base_url = "https://portal.api.bankmillennium.pl"
+    endpoint_prices = "bm/app/portal/views/public/funds//investmentFundsRates"
+    url = f"{base_url}/{endpoint_prices}"
 
     response = requests.get(
-        url="https://portal.api.bankmillennium.pl/bm/app/portal/views/public/funds//investmentFundsRates",
+        url=url,
         params=fund_details,
     )
 

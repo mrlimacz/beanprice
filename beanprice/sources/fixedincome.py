@@ -1,13 +1,12 @@
 """A source calculating bond accrued interest based on commodity metadata"""
 
-from beanprice import source
-from datetime import datetime, date, time
+from datetime import datetime, time
 import re
+from decimal import Decimal
 from pandas.tseries.offsets import DateOffset
 from pandas import Series, date_range, merge_asof
-from beanprice import source
 from dateutil.tz import tzlocal
-from decimal import Decimal
+from beanprice import source
 
 
 class FixedIncomeError(ValueError):
@@ -31,9 +30,11 @@ def _get_quote(ticker, quote_date=None, commodity_metadata=None):
 
     # Check if metadata supplied
     try:
-        assert isinstance(commodity_metadata, dict)
-    except AssertionError:
-        raise FixedIncomeError(f"Commodity {ticker} does not have a metadata supplied")
+        assert isinstance(
+            commodity_metadata, dict
+        ), f"Commodity {ticker} does not have a metadata supplied"
+    except AssertionError as exc:
+        raise FixedIncomeError from exc
 
     # Check if all necessary metadata provided
     required_keys = {
@@ -46,8 +47,9 @@ def _get_quote(ticker, quote_date=None, commodity_metadata=None):
         "commodity_date",
     }
     if not required_keys.issubset(set(commodity_metadata.keys())):
+        missing_keys = required_keys - commodity_metadata.keys()
         raise FixedIncomeError(
-            f"The following metadata not provided: {', '. join(required_keys - commodity_metadata.keys())}"
+            f"The following metadata not provided: {', '. join(missing_keys)}"
         )
 
     # Parse start and end date
@@ -57,7 +59,9 @@ def _get_quote(ticker, quote_date=None, commodity_metadata=None):
     else:
         end_date = quote_date
     start_date = datetime.combine(start_date, time(0, 0, 0), tzinfo=tzlocal())
-    end_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tzlocal())
+    end_date = end_date.replace(
+        hour=0, minute=0, second=0, microsecond=0, tzinfo=tzlocal()
+    )
 
     # Parse period lenght and interes rates
     match = re.match(
@@ -71,11 +75,11 @@ def _get_quote(ticker, quote_date=None, commodity_metadata=None):
             day_offset_for_period = DateOffset(months=int(match.group("number")))
         else:
             raise FixedIncomeError(
-                f"Incorrect period duration format, expected r'^\\d+[YM]$'"
+                "Incorrect period duration format, expected r'^\\d+[YM]$'"
             )
     else:
         raise FixedIncomeError(
-            f"Incorrect period duration format, expected r'^\\d+[YM]$'"
+            "Incorrect period duration format, expected r'^\\d+[YM]$'"
         )
     interest_mapping = {
         key + 1: float(value) / 100

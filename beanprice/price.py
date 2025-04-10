@@ -617,7 +617,9 @@ def fetch_price(dprice: DatedPrice, swap_inverted: bool = False) -> Optional[dat
             source = psource.module.Source()
         except AttributeError:
             continue
-        srcprice = fetch_cached_price(source, psource.symbol, dprice.date, dprice.commodity_metadata)
+        srcprice = fetch_cached_price(
+            source, psource.symbol, dprice.date, dprice.commodity_metadata
+        )
         if srcprice is not None:
             break
     else:
