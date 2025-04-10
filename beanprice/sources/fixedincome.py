@@ -1,5 +1,4 @@
-"""A source calculating bond accrued interest based on commodity metadata
-"""
+"""A source calculating bond accrued interest based on commodity metadata"""
 
 from beanprice import source
 from datetime import datetime, date, time
@@ -16,14 +15,25 @@ class FixedIncomeError(ValueError):
 
 
 class Source(source.Source):
-    def get_latest_price(self, ticker, metadata):
-        return _get_quote(ticker, metadata)
+    def __init__(self):
+        self.requires_commodity_metadata = True
 
-    def get_historical_price(self, ticker, metadata, time):
-        return _get_quote(ticker, metadata, time)
+    def get_latest_price(self, ticker, commodity_metadata=None):
+        return _get_quote(ticker, commodity_metadata=commodity_metadata)
+
+    def get_historical_price(self, ticker, time, commodity_metadata=None):
+        return _get_quote(
+            ticker, quote_date=time, commodity_metadata=commodity_metadata
+        )
 
 
-def _get_quote(ticker, metadata, quote_date=None):
+def _get_quote(ticker, quote_date=None, commodity_metadata=None):
+
+    # Check if metadata supplied
+    try:
+        assert isinstance(commodity_metadata, dict)
+    except AssertionError:
+        raise FixedIncomeError(f"Commodity {ticker} does not have a metadata supplied")
 
     # Check if all necessary metadata provided
     required_keys = {
@@ -35,24 +45,24 @@ def _get_quote(ticker, metadata, quote_date=None):
         "fixed_income_coupons_reinvested",
         "commodity_date",
     }
-    if not required_keys.issubset(set(metadata.keys())):
+    if not required_keys.issubset(set(commodity_metadata.keys())):
         raise FixedIncomeError(
-            f"The following metadata not provided: {', '. join(required_keys - metadata.keys())}"
+            f"The following metadata not provided: {', '. join(required_keys - commodity_metadata.keys())}"
         )
 
     # Parse start and end date
-    start_date = metadata.get("commodity_date")
+    start_date = commodity_metadata.get("commodity_date")
     if quote_date is None:
         end_date = datetime.today()
     else:
         end_date = quote_date
     start_date = datetime.combine(start_date, time(0, 0, 0), tzinfo=tzlocal())
-    end_date = end_date.replace(hour=0, minute=0, second=0, tzinfo=tzlocal())
+    end_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tzlocal())
 
     # Parse period lenght and interes rates
     match = re.match(
         r"^(?P<number>\d+)((?P<years>Y)|(?P<months>M))$",
-        metadata.get("fixed_income_period_duration"),
+        commodity_metadata.get("fixed_income_period_duration"),
     )
     if match:
         if match.group("years"):
@@ -61,23 +71,23 @@ def _get_quote(ticker, metadata, quote_date=None):
             day_offset_for_period = DateOffset(months=int(match.group("number")))
         else:
             raise FixedIncomeError(
-                f"Incorrect period duration format, expected r'^\d+[YM]$'"
+                f"Incorrect period duration format, expected r'^\\d+[YM]$'"
             )
     else:
         raise FixedIncomeError(
-            f"Incorrect period duration format, expected r'^\d+[YM]$'"
+            f"Incorrect period duration format, expected r'^\\d+[YM]$'"
         )
     interest_mapping = {
         key + 1: float(value) / 100
         for key, value in enumerate(
-            metadata.get("fixed_income_interest_rates").split("/")
+            commodity_metadata.get("fixed_income_interest_rates").split("/")
         )
     }
 
     # Determine date ranges and details for periods
     period_bounds = date_range(
         start=start_date,
-        periods=int(metadata.get("fixed_income_period_count")) + 1,
+        periods=int(commodity_metadata.get("fixed_income_period_count")) + 1,
         freq=day_offset_for_period,
         name="PeriodStartDate",
     )
@@ -90,7 +100,7 @@ def _get_quote(ticker, metadata, quote_date=None):
         period_bounds.PeriodEndDate - period_bounds.PeriodStartDate
     )
     period_bounds["InterestRate"] = period_bounds.PeriodNumber.map(interest_mapping)
-    if metadata.get("fixed_income_coupons_reinvested") == 'true':
+    if commodity_metadata.get("fixed_income_coupons_reinvested") == "true":
         period_bounds["CumulativeInterestRate"] = (
             (1 + period_bounds.InterestRate)
             .cumprod()
@@ -116,14 +126,14 @@ def _get_quote(ticker, metadata, quote_date=None):
 
     # Calculate daily value, get the correct date
     timeseries["Price"] = (
-        float(metadata.get("fixed_income_nominal_value"))
+        float(commodity_metadata.get("fixed_income_nominal_value"))
         * timeseries.CumulativeInterestRate
         * (
             1
             + timeseries.InterestRate
             * timeseries.DayDiff
             / timeseries.PeriodLength
-            / int(metadata.get("fixed_income_coupon_rate"))
+            / int(commodity_metadata.get("fixed_income_coupon_rate"))
         )
     ).round(2)
 
