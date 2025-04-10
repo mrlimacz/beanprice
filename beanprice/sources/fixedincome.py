@@ -108,7 +108,7 @@ def _get_quote(ticker, quote_date=None, commodity_metadata=None):
         period_bounds["CumulativeInterestRate"] = (
             (1 + period_bounds.InterestRate)
             .cumprod()
-            .fillna(method="ffill")
+            .ffill()
             .shift(1, fill_value=1)
         )
     else:
