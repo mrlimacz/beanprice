@@ -61,7 +61,7 @@ class DatedPrice(NamedTuple):
     quote: Optional[str]
     date: Optional[datetime.date]
     sources: List[PriceSource]
-    commodity_metadata: Optional[dict]
+    commodity_metadata: Optional[dict] = None
 
 
 # The Python package where the default sources are found.
@@ -483,7 +483,7 @@ def now():
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def fetch_cached_price(source, symbol, date, commodity_metadata):
+def fetch_cached_price(source, symbol, date, commodity_metadata=None):
     """Call Source to fetch a price, but look and/or update the cache first.
 
     This function entirely deals with caching and correct expiration. It keeps
