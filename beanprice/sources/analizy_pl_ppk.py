@@ -2,7 +2,6 @@
 
 from decimal import Decimal
 
-from dateutil.tz import tz
 from dateutil.parser import parse
 import requests
 
@@ -31,11 +30,12 @@ def _get_quote(ticker, date=None):
 
     response_json = response.json()
     try:
+        fund_id = response_json.get("id")
         assert (
-            response_json.get("id") == ticker
-        ), f"Requested ticker {ticker} does not match response {response_json.get("id")}"
-    except AssertionError as e:
-        raise AnalizyPlPPKError(e)
+            fund_id == ticker
+        ), f"Requested ticker {ticker} does not match response {fund_id}"
+    except AssertionError as ex:
+        raise AnalizyPlPPKError(ex) from ex
 
     try:
         currency = response_json["currency"]
@@ -45,8 +45,8 @@ def _get_quote(ticker, date=None):
         price = prices[-1]
         price_date = price["date"]
         price_value = price["value"]
-    except KeyError as e:
-        raise AnalizyPlPPKError(f"No elements {e} found in response")
+    except KeyError as ex:
+        raise AnalizyPlPPKError(f"No elements {ex} found in response") from ex
 
     price_date = parse(price_date).replace(tzinfo=date.tzinfo)
     price_value = Decimal(price_value)
