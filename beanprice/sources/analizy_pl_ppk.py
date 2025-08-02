@@ -29,29 +29,32 @@ def _get_quote(ticker, date=None):
         )
 
     response_json = response.json()
-    try:
-        fund_id = response_json.get("id")
-        assert (
-            fund_id == ticker
-        ), f"Requested ticker {ticker} does not match response {fund_id}"
-    except AssertionError as ex:
-        raise AnalizyPlPPKError(ex) from ex
+    if response_json :
+        try:
+            fund_id = response_json.get("id")
+            assert (
+                fund_id == ticker
+            ), f"Requested ticker {ticker} does not match response {fund_id}"
+        except AssertionError as ex:
+            raise AnalizyPlPPKError(ex) from ex
 
-    try:
-        currency = response_json["currency"]
-        series = response_json["series"]
-        selected_series = next((d for d in series if d.get("label") == "Fundusz"), {})
-        prices = selected_series["price"]
-        price = prices[-1]
-        price_date = price["date"]
-        price_value = price["value"]
-    except KeyError as ex:
-        raise AnalizyPlPPKError(f"No elements {ex} found in response") from ex
+        try:
+            currency = response_json["currency"]
+            series = response_json["series"]
+            selected_series = next((d for d in series if d.get("label") == "Fundusz"), {})
+            prices = selected_series["price"]
+            price = prices[-1]
+            price_date = price["date"]
+            price_value = price["value"]
+        except KeyError as ex:
+            raise AnalizyPlPPKError(f"No elements {ex} found in response") from ex
 
-    price_date = parse(price_date).replace(tzinfo=date.tzinfo)
-    price_value = Decimal(price_value)
+        price_date = parse(price_date).replace(tzinfo=date.tzinfo)
+        price_value = Decimal(price_value)
 
-    return source.SourcePrice(price_value, price_date, currency)
+        return source.SourcePrice(price_value, price_date, currency)
+    else:
+        return None
 
 
 class Source(source.Source):
