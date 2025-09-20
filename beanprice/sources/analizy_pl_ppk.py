@@ -1,8 +1,9 @@
 """A source fetching prices from analizy.pl for PPK funds"""
 
 from decimal import Decimal
-
+from datetime import timedelta
 from dateutil.parser import parse
+from dateutil.tz.tz import tzutc
 import requests
 
 from beanprice import source
@@ -16,7 +17,16 @@ def _get_quote(ticker, date=None):
     """Fetch a PPK fund price from analizy.pl"""
     base_url = "https://www.analizy.pl/api/quotation/ppk"
     url = f"{base_url}/{ticker}"
-    params = {"start": date.strftime("%Y-%m-%d"), "end": date.strftime("%Y-%m-%d")}
+    if date:
+        start_date = date - timedelta(days=5)
+        params = {
+            "start": start_date.strftime("%Y-%m-%d"),
+            "end": date.strftime("%Y-%m-%d"),
+        }
+        tzinfo = date.tzinfo
+    else:
+        params = {}
+        tzinfo = tzutc()
 
     response = requests.get(
         url=url,
@@ -29,7 +39,7 @@ def _get_quote(ticker, date=None):
         )
 
     response_json = response.json()
-    if response_json :
+    if response_json:
         try:
             fund_id = response_json.get("id")
             assert (
@@ -41,7 +51,9 @@ def _get_quote(ticker, date=None):
         try:
             currency = response_json["currency"]
             series = response_json["series"]
-            selected_series = next((d for d in series if d.get("label") == "Fundusz"), {})
+            selected_series = next(
+                (d for d in series if d.get("label") == "Fundusz"), {}
+            )
             prices = selected_series["price"]
             price = prices[-1]
             price_date = price["date"]
@@ -49,7 +61,7 @@ def _get_quote(ticker, date=None):
         except KeyError as ex:
             raise AnalizyPlPPKError(f"No elements {ex} found in response") from ex
 
-        price_date = parse(price_date).replace(tzinfo=date.tzinfo)
+        price_date = parse(price_date).replace(tzinfo=tzinfo)
         price_value = Decimal(price_value)
 
         return source.SourcePrice(price_value, price_date, currency)
