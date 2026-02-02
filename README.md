@@ -61,7 +61,6 @@ The following price sources are available:
 | Coincap                 | `beanprice.coincap`       | [Most common (crypto)currencies](https://docs.coincap.io)                         | USD                                                                              | ✓             | ✓                 |
 | Coinmarketcap           | `beanprice.coinmarketcap` | [Most common (crypto)currencies](https://coinmarketcap.com/api/documentation/v1/) | Many Currencies                                                                  | ✓             | ✕                 |
 | European Central Bank API| `beanprice.ecbrates`      | [Many currencies](https://data.ecb.europa.eu/search-results?searchTerm=exchange%20rates)                     | [Many currencies](https://data.ecb.europa.eu/search-results?searchTerm=exchange%20rates) (Derived from EUR rates)| ✓             | ✓                |
-| IEX                     | `beanprice.iex`           | [Trading symbols](https://iextrading.com/trading/eligible-symbols/)               | USD                                                                              | ✓             | 🚧 (Not yet!)     |
 | OANDA                   | `beanprice.oanda`         | [Many currencies](https://developer.oanda.com/exchange-rates-api/v1/currencies/)  | [Many currencies](https://developer.oanda.com/exchange-rates-api/v1/currencies/) | ✓             | ✓                 |
 | Quandl                  | `beanprice.quandl`        | [Various datasets](https://www.quandl.com/search)                                 | [Various datasets](https://www.quandl.com/search)                                | ✓             | ✓                 |
 | Rates API               | `beanprice.ratesapi`      | [Many currencies](https://api.exchangerate.host/symbols)                          | [Many currencies](https://api.exchangerate.host/symbols)                         | ✓             | ✓                 |
@@ -82,7 +81,7 @@ from beanprice import source
 class Source(source.Source):
   def get_latest_price(self, ticker) -> source.SourcePrice | None:
     pass
-  
+
   def get_historical_price(self, ticker, time):
     pass
 ```

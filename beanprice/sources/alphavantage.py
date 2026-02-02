@@ -58,7 +58,7 @@ def _do_fetch(params):
     resp = requests.get(url="https://www.alphavantage.co/query", params=params)
     data = resp.json()
     # This is for dealing with the rate limit, sleep for 60 seconds and then retry
-    if "Note" in data:
+    if "Note" in data or "Information" in data:
         sleep(60)
         resp = requests.get(url="https://www.alphavantage.co/query", params=params)
         data = resp.json()
