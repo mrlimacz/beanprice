@@ -15,8 +15,9 @@ import csv
 from collections import OrderedDict
 import datetime
 from decimal import Decimal
+import io
 
-import requests
+from curl_cffi import requests
 
 from beanprice import source
 
@@ -27,20 +28,21 @@ TIMEZONE = datetime.timezone(datetime.timedelta(hours=-4), "America/New_York")
 
 TSP_FUND_NAMES = [
     "LInco",  # 0
-    "L2025",  # 1
-    "L2030",  # 2
-    "L2035",  # 3
-    "L2040",  # 4
-    "L2045",  # 5
-    "L2050",  # 6
-    "L2055",  # 7
-    "L2060",  # 8
-    "L2065",  # 9
-    "GFund",  # 10
-    "FFund",  # 11
-    "CFund",  # 12
-    "SFund",  # 13
-    "IFund",  # 14
+    "L2030",  # 1
+    "L2035",  # 2
+    "L2040",  # 3
+    "L2045",  # 4
+    "L2050",  # 5
+    "L2055",  # 6
+    "L2060",  # 7
+    "L2065",  # 8
+    "L2070",  # 9
+    "L2075",  # 10
+    "GFund",  # 11
+    "FFund",  # 12
+    "CFund",  # 13
+    "SFund",  # 14
+    "IFund",  # 15
 ]
 
 csv.register_dialect(
@@ -66,18 +68,19 @@ def parse_tsp_csv(response: requests.models.Response) -> OrderedDict:
 
     data = OrderedDict()
 
-    text = response.iter_lines(decode_unicode=True)
+    text = io.StringIO(response.text)
 
     reader = csv.DictReader(text, dialect="tsp")
 
+
     for row in reader:
-        # Date from TSP looks like "July 30. 2020"
-        # There is indeed a period after the day of month.
-        date = datetime.datetime.strptime(row["Date"], "%b %d. %Y")
+        if not row["Date"]:
+            continue
+        # Date from TSP looks like "2020-02-28"
+        date = datetime.datetime.strptime(row["Date"], "%Y-%m-%d")
         date = date.replace(hour=16, tzinfo=TIMEZONE)
         names = [
             "L Income",
-            "L 2025",
             "L 2030",
             "L 2035",
             "L 2040",
@@ -86,6 +89,8 @@ def parse_tsp_csv(response: requests.models.Response) -> OrderedDict:
             "L 2055",
             "L 2060",
             "L 2065",
+            "L 2070",
+            "L 2075",
             "G Fund",
             "F Fund",
             "C Fund",
@@ -105,7 +110,7 @@ def parse_response(response: requests.models.Response) -> OrderedDict:
     Raises:
       TSPError: If there is an error in the response.
     """
-    if response.status_code != requests.codes.ok:
+    if not response.ok:
         raise TSPError("Error from TSP Parsing Status {}".format(response.status_code))
 
     return parse_tsp_csv(response)
@@ -130,7 +135,7 @@ class Source(source.Source):
                 )
             )
 
-        url = "https://secure.tsp.gov/components/CORS/getSharePricesRaw.html"
+        url = "https://www.tsp.gov/data/fund-price-history.csv"
         payload = {
             # Grabbing the last fourteen days of data in event the markets were closed.
             "startdate": (time - datetime.timedelta(days=14)).strftime("%Y%m%d"),
@@ -140,7 +145,7 @@ class Source(source.Source):
             "InvFunds": "1",
         }
 
-        response = requests.get(url, params=payload)
+        response = requests.get(url, params=payload, impersonate="chrome")
         result = parse_response(response)
         trade_day = next(iter(result.items()))
         prices = trade_day[1]
